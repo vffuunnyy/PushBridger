@@ -2,5 +2,12 @@
     <string name="app_name">PushBridger</string>
     <string name="service_name">NotificationListener</string>
     <string name="server_url">https://sosiska.work/push_api/receive</string>
-    <string name="shown_text">You can leave application</string>
+    <string name="shown_text">Now, you can leave the application</string>
+    <string name="accessibility_service_label">Notification Accessibility Service</string>
+    <string name="accessibility_service_description">Push notifications receiver</string>
+    <string name="notification_title">Push Bridger</string>
+    <string name="waiting_for_notifications">Waiting for pushes</string>
+    <string name="sending_notifications">Sending notification:</string>
+    <string name="web_server_url">Web server url</string>
+    <string name="save">Save</string>
 </resources>
