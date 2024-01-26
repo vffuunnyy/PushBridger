@@ -1,6 +1,7 @@
 package dev.vffuunnyy.push_bridger
 
 import android.annotation.SuppressLint
+import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
@@ -11,9 +12,12 @@ import android.provider.Settings
 import android.widget.Button
 import android.widget.EditText
 import androidx.appcompat.app.AppCompatActivity
-
-
-var sharedPreferences: SharedPreferences? = null
+import dev.vffuunnyy.push_bridger.services.NotificationAccessibilityService
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class MainActivity : AppCompatActivity() {
 
@@ -23,9 +27,9 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        if (!isNotificationServiceEnabled()) {
-            showEnableNotificationListenerAlertDialog()  // Redirect to notification settings
-        }
+//        if (!isNotificationServiceEnabled()) {
+//            showEnableNotificationListenerAlertDialog()  // Redirect to notification settings
+//        }
 
         if (!isBatteryOptimizationIgnored()) {
             showIgnoreBatteryOptimizationAlertDialog()  // Request to ignore battery optimization
@@ -35,7 +39,7 @@ class MainActivity : AppCompatActivity() {
             openAccessibilitySettings()  // Redirect to accessibility settings
         }
 
-        sharedPreferences = getSharedPreferences("AppPrefs", MODE_PRIVATE)
+        val sharedPreferences = getSharedPreferences("AppPrefs", MODE_PRIVATE)
 
         serverUrl = findViewById(R.id.server_url)
         serverUrl?.setText(sharedPreferences?.getString("serverUrl", ""))
@@ -48,11 +52,15 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun isAccessibilitySettingsEnabled(): Boolean {
-        val accessibilityEnabled = Settings.Secure.getInt(
+        val flat = Settings.Secure.getString(
             contentResolver,
-            Settings.Secure.ACCESSIBILITY_ENABLED
+            Settings.Secure.ENABLED_ACCESSIBILITY_SERVICES
         )
-        return accessibilityEnabled == 1
+        val componentName = ComponentName(
+            packageName,
+            NotificationAccessibilityService::class.java.name
+        ).flattenToString()
+        return flat?.split(":")?.any { it.contains(componentName) } == true
     }
 
     private fun openAccessibilitySettings() {

@@ -7,7 +7,6 @@ import android.view.accessibility.AccessibilityEvent
 import android.view.accessibility.AccessibilityEvent.TYPE_NOTIFICATION_STATE_CHANGED
 import dev.vffuunnyy.push_bridger.NotificationUtils
 import dev.vffuunnyy.push_bridger.R
-import dev.vffuunnyy.push_bridger.sharedPreferences
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.cancel
@@ -17,7 +16,6 @@ import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.RequestBody.Companion.toRequestBody
-import okhttp3.internal.notify
 import org.json.JSONObject
 
 class NotificationAccessibilityService : AccessibilityService() {
@@ -37,33 +35,37 @@ class NotificationAccessibilityService : AccessibilityService() {
     }
 
     override fun onAccessibilityEvent(event: AccessibilityEvent) {
-        if (event.eventType != TYPE_NOTIFICATION_STATE_CHANGED)
-            return
+        try {
+            if (event.eventType != TYPE_NOTIFICATION_STATE_CHANGED)
+                return
 
-        val packageName = event.packageName.toString()
-        val notification = event.parcelableData as? Notification
-        val extras = notification?.extras
-        val title = extras?.getString(Notification.EXTRA_TITLE)
-        val text = extras?.getCharSequence(Notification.EXTRA_TEXT)
+            val packageName = event.packageName.toString()
+            val notification = event.parcelableData as? Notification
+            val extras = notification?.extras
+            val title = extras?.getString(Notification.EXTRA_TITLE)
+            val text = extras?.getCharSequence(Notification.EXTRA_TEXT)
 
-        if (packageName == this.packageName)
-            return
+            if (packageName == this.packageName)
+                return
 
-        val jsonObject = JSONObject().apply {
-            put("package_name", packageName)
-            put("title", title ?: "")
-            put("text", text.toString())
-        }
+            val jsonObject = JSONObject().apply {
+                put("package_name", packageName)
+                put("title", title ?: "")
+                put("text", text.toString())
+            }
 
-        val notificationManager = getSystemService(NOTIFICATION_SERVICE) as NotificationManager
-        val sendingNotification = NotificationUtils.createForegroundNotification(
-            this,
-            getString(R.string.sending_notifications) + " " + packageName
-        )
-        notificationManager.notify(NotificationUtils.getNotificationId(), sendingNotification)
+            val notificationManager = getSystemService(NOTIFICATION_SERVICE) as NotificationManager
+            val sendingNotification = NotificationUtils.createForegroundNotification(
+                this,
+                getString(R.string.sending_notifications) + " " + packageName
+            )
+            notificationManager.notify(NotificationUtils.getNotificationId(), sendingNotification)
 
-        coroutineScope.launch {
-            sendPostRequest(jsonObject.toString())
+            coroutineScope.launch {
+                sendPostRequest(jsonObject.toString())
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
         }
     }
 
@@ -75,25 +77,25 @@ class NotificationAccessibilityService : AccessibilityService() {
         )
 
         withContext(Dispatchers.IO) {
-            val serverUrl = sharedPreferences?.getString("serverUrl", "") ?: return@withContext
-
-            val requestBody =
-                postBody.toRequestBody("application/json; charset=utf-8".toMediaType())
-            val request = Request.Builder()
-                .url(serverUrl)
-                .post(requestBody)
-                .build()
-
             try {
+                val serverUrl = getSharedPreferences("AppPrefs", MODE_PRIVATE)?.getString("serverUrl", "") ?: return@withContext
+
+                val requestBody =
+                    postBody.toRequestBody("application/json; charset=utf-8".toMediaType())
+                val request = Request.Builder()
+                    .url(serverUrl)
+                    .post(requestBody)
+                    .build()
+
                 client.newCall(request).execute()
+
+                notificationManager.notify(
+                    NotificationUtils.getNotificationId(),
+                    foregroundNotification
+                )
             } catch (e: Exception) {
                 e.printStackTrace()
             }
-
-            notificationManager.notify(
-                NotificationUtils.getNotificationId(),
-                foregroundNotification
-            )
         }
     }
 
