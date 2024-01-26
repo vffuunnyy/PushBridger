@@ -4,7 +4,6 @@ import android.annotation.SuppressLint
 import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
-import android.content.SharedPreferences
 import android.net.Uri
 import android.os.Bundle
 import android.os.PowerManager
@@ -13,11 +12,6 @@ import android.widget.Button
 import android.widget.EditText
 import androidx.appcompat.app.AppCompatActivity
 import dev.vffuunnyy.push_bridger.services.NotificationAccessibilityService
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 
 class MainActivity : AppCompatActivity() {
 
@@ -26,10 +20,6 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-
-//        if (!isNotificationServiceEnabled()) {
-//            showEnableNotificationListenerAlertDialog()  // Redirect to notification settings
-//        }
 
         if (!isBatteryOptimizationIgnored()) {
             showIgnoreBatteryOptimizationAlertDialog()  // Request to ignore battery optimization
@@ -65,19 +55,6 @@ class MainActivity : AppCompatActivity() {
 
     private fun openAccessibilitySettings() {
         val intent = Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS)
-        startActivity(intent)
-    }
-
-    private fun isNotificationServiceEnabled(): Boolean {
-        val flat = Settings.Secure.getString(
-            contentResolver,
-            "enabled_notification_listeners"
-        )
-        return flat?.split(":")?.any { it.contains(packageName) } == true
-    }
-
-    private fun showEnableNotificationListenerAlertDialog() {
-        val intent = Intent(Settings.ACTION_NOTIFICATION_LISTENER_SETTINGS)
         startActivity(intent)
     }
 

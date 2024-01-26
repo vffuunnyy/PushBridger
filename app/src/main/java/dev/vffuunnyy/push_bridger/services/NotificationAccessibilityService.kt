@@ -10,6 +10,7 @@ import dev.vffuunnyy.push_bridger.R
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.cancel
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import okhttp3.MediaType.Companion.toMediaType
@@ -77,24 +78,31 @@ class NotificationAccessibilityService : AccessibilityService() {
         )
 
         withContext(Dispatchers.IO) {
-            try {
-                val serverUrl = getSharedPreferences("AppPrefs", MODE_PRIVATE)?.getString("serverUrl", "") ?: return@withContext
+            for (x in 0..5) {
+                try {
+                    val serverUrl =
+                        getSharedPreferences("AppPrefs", MODE_PRIVATE)?.getString("serverUrl", "")
+                            ?: return@withContext
 
-                val requestBody =
-                    postBody.toRequestBody("application/json; charset=utf-8".toMediaType())
-                val request = Request.Builder()
-                    .url(serverUrl)
-                    .post(requestBody)
-                    .build()
+                    val requestBody =
+                        postBody.toRequestBody("application/json; charset=utf-8".toMediaType())
+                    val request = Request.Builder()
+                        .url(serverUrl)
+                        .post(requestBody)
+                        .build()
 
-                client.newCall(request).execute()
+                    client.newCall(request).execute()
 
-                notificationManager.notify(
-                    NotificationUtils.getNotificationId(),
-                    foregroundNotification
-                )
-            } catch (e: Exception) {
-                e.printStackTrace()
+                    notificationManager.notify(
+                        NotificationUtils.getNotificationId(),
+                        foregroundNotification
+                    )
+
+                    return@withContext
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                    delay(5000)
+                }
             }
         }
     }

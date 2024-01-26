@@ -21,16 +21,6 @@
         android:theme="@style/Theme.PushBridger"
         tools:targetApi="31">
 
-<!--        <service-->
-<!--            android:name=".listeners.NotificationListener"-->
-<!--            android:exported="true"-->
-<!--            android:label="@string/service_name"-->
-<!--            android:permission="android.permission.BIND_NOTIFICATION_LISTENER_SERVICE">-->
-<!--            <intent-filter>-->
-<!--                <action android:name="android.service.notification.NotificationListenerService" />-->
-<!--            </intent-filter>-->
-<!--        </service>-->
-
         <service
             android:name=".services.NotificationAccessibilityService"
             android:exported="true"
@@ -47,23 +37,22 @@
         </service>
 
 
-<!--        <receiver-->
-<!--            android:name=".receivers.BootUpReceiver"-->
-<!--            android:enabled="true"-->
-<!--            android:exported="true"-->
-<!--            android:permission="android.permission.RECEIVE_BOOT_COMPLETED">-->
-<!--            <intent-filter>-->
-<!--                <action android:name="android.intent.action.BOOT_COMPLETED" />-->
-<!--                <category android:name="android.intent.category.DEFAULT" />-->
-<!--            </intent-filter>-->
-<!--        </receiver>-->
+        <receiver
+            android:name=".receivers.BootUpReceiver"
+            android:enabled="true"
+            android:exported="true"
+            android:permission="android.permission.RECEIVE_BOOT_COMPLETED">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+                <category android:name="android.intent.category.ACCESSIBILITY_SHORTCUT_TARGET" />
+            </intent-filter>
+        </receiver>
 
         <activity
             android:name=".MainActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
