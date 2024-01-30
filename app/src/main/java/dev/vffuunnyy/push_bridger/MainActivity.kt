@@ -1,16 +1,20 @@
 package dev.vffuunnyy.push_bridger
 
+import android.Manifest
 import android.annotation.SuppressLint
 import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
+import android.os.Build
 import android.os.Bundle
 import android.os.PowerManager
 import android.provider.Settings
 import android.widget.Button
 import android.widget.EditText
+import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.app.NotificationManagerCompat
 import dev.vffuunnyy.push_bridger.services.NotificationAccessibilityService
 
 class MainActivity : AppCompatActivity() {
@@ -29,6 +33,12 @@ class MainActivity : AppCompatActivity() {
             openAccessibilitySettings()  // Redirect to accessibility settings
         }
 
+        if (!areNotificationsEnabled()) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                requestNotificationPermission()
+            }
+        }
+
         val sharedPreferences = getSharedPreferences("AppPrefs", MODE_PRIVATE)
 
         serverUrl = findViewById(R.id.server_url)
@@ -39,6 +49,15 @@ class MainActivity : AppCompatActivity() {
                 ?.putString("serverUrl", serverUrl?.text.toString())
                 ?.apply()
         }
+    }
+
+    private fun areNotificationsEnabled(): Boolean {
+        return NotificationManagerCompat.from(this).areNotificationsEnabled()
+    }
+
+    @RequiresApi(Build.VERSION_CODES.TIRAMISU)
+    private fun requestNotificationPermission() {
+        requestPermissions(arrayOf(Manifest.permission.POST_NOTIFICATIONS), 1234)
     }
 
     private fun isAccessibilitySettingsEnabled(): Boolean {

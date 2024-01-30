@@ -36,6 +36,7 @@ object NotificationUtils {
             .setContentText(text)
             .setSmallIcon(R.drawable.ic_launcher_foreground)
             .setContentIntent(pendingIntent)
+            .setOngoing(true)
             .build()
     }
 

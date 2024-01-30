@@ -81,7 +81,7 @@ class NotificationAccessibilityService : AccessibilityService() {
             for (x in 0..5) {
                 try {
                     val serverUrl =
-                        getSharedPreferences("AppPrefs", MODE_PRIVATE)?.getString("serverUrl", "")
+                        getSharedPreferences("AppPrefs", MODE_PRIVATE)?.getString("serverUrl", null)
                             ?: return@withContext
 
                     val requestBody =
