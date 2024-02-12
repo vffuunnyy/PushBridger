@@ -3,6 +3,7 @@ package dev.vffuunnyy.push_bridger.services
 import android.accessibilityservice.AccessibilityService
 import android.app.Notification
 import android.app.NotificationManager
+import android.content.Intent
 import android.view.accessibility.AccessibilityEvent
 import android.view.accessibility.AccessibilityEvent.TYPE_NOTIFICATION_STATE_CHANGED
 import dev.vffuunnyy.push_bridger.NotificationUtils
@@ -18,10 +19,12 @@ import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.RequestBody.Companion.toRequestBody
 import org.json.JSONObject
+import java.util.concurrent.TimeUnit
+
 
 class NotificationAccessibilityService : AccessibilityService() {
 
-    private val client = OkHttpClient()
+    private val client = OkHttpClient().newBuilder().connectTimeout(5, TimeUnit.SECONDS).build()
     private val coroutineScope = CoroutineScope(Dispatchers.IO)
 
     override fun onServiceConnected() {
@@ -33,6 +36,22 @@ class NotificationAccessibilityService : AccessibilityService() {
             getString(R.string.waiting_for_notifications)
         )
         startForeground(NotificationUtils.getNotificationId(), foregroundNotification)
+
+        val intent = Intent("ACTION_UPDATE_STATUS")
+        intent.putExtra("service_status", true)
+        sendBroadcast(intent)
+    }
+
+    override fun onDestroy() {
+        coroutineScope.cancel()
+        NotificationUtils.clearNotifications(this)
+        stopForeground(STOP_FOREGROUND_REMOVE)
+
+        val intent = Intent("ACTION_UPDATE_STATUS")
+        intent.putExtra("service_status", false)
+        sendBroadcast(intent)
+
+        super.onDestroy()
     }
 
     override fun onAccessibilityEvent(event: AccessibilityEvent) {
@@ -43,7 +62,9 @@ class NotificationAccessibilityService : AccessibilityService() {
             val packageName = event.packageName.toString()
             val notification = event.parcelableData as? Notification
             val extras = notification?.extras
-            val title = extras?.getString(Notification.EXTRA_TITLE)
+            val title = extras?.getString(Notification.EXTRA_TITLE) ?: extras?.getString(
+                Notification.EXTRA_TITLE_BIG
+            )
             val text = extras?.getCharSequence(Notification.EXTRA_TEXT)
 
             if (packageName == this.packageName)
@@ -108,7 +129,6 @@ class NotificationAccessibilityService : AccessibilityService() {
     }
 
     override fun onInterrupt() {
-        super.onDestroy()
-        coroutineScope.cancel()
+        onDestroy()
     }
 }

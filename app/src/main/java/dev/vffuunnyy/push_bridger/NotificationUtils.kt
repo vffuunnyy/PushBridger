@@ -24,6 +24,11 @@ object NotificationUtils {
         manager.createNotificationChannel(serviceChannel)
     }
 
+    fun clearNotifications(context: Context) {
+        val manager = context.getSystemService(NotificationManager::class.java)
+        manager.cancelAll()
+    }
+
     fun createForegroundNotification(context: Context, text: String): Notification {
         val notificationIntent = Intent(context, MainActivity::class.java)
         val pendingIntent = PendingIntent.getActivity(
