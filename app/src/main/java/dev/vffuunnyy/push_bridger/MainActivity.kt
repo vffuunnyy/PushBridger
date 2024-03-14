@@ -22,8 +22,6 @@ import dev.vffuunnyy.push_bridger.services.NotificationAccessibilityService
 
 class MainActivity : AppCompatActivity() {
 
-    private var serverUrl: EditText? = null
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
@@ -38,60 +36,53 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
-        val sharedPreferences = getSharedPreferences("AppPrefs", MODE_PRIVATE)
-
-        serverUrl = findViewById(R.id.server_url)
-        serverUrl?.setText(sharedPreferences?.getString("serverUrl", ""))
-
-        findViewById<Button>(R.id.save_button).setOnClickListener {
-            sharedPreferences?.edit()
-                ?.putString("serverUrl", serverUrl?.text.toString())
-                ?.apply()
+        if (!isAccessibilitySettingsEnabled()) {
+            openAccessibilitySettings()
         }
     }
 
     override fun onResume() {
         super.onResume()
-        updateAccessibilityServiceStatus(isAccessibilitySettingsEnabled())
+//        updateAccessibilityServiceStatus(isAccessibilitySettingsEnabled())
     }
 
     @RequiresApi(Build.VERSION_CODES.TIRAMISU)
     override fun onStart() {
         super.onStart()
-        registerReceiver(
-            updateStatusReceiver, IntentFilter("dev.vffuunnyy.push_bridger.UPDATE_STATUS"),
-            RECEIVER_NOT_EXPORTED
-        )
+//        registerReceiver(
+//            updateStatusReceiver, IntentFilter("dev.vffuunnyy.push_bridger.UPDATE_STATUS"),
+//            RECEIVER_NOT_EXPORTED
+//        )
     }
 
     override fun onStop() {
         super.onStop()
-        unregisterReceiver(updateStatusReceiver)
+//        unregisterReceiver(updateStatusReceiver)
     }
 
-    private val updateStatusReceiver: BroadcastReceiver = object : BroadcastReceiver() {
-        override fun onReceive(context: Context, intent: Intent) {
-            val isEnabled = intent.getBooleanExtra("service_status", false)
-            updateAccessibilityServiceStatus(isEnabled)
-        }
-    }
+//    private val updateStatusReceiver: BroadcastReceiver = object : BroadcastReceiver() {
+//        override fun onReceive(context: Context, intent: Intent) {
+//            val isEnabled = intent.getBooleanExtra("service_status", false)
+//            updateAccessibilityServiceStatus(isEnabled)
+//        }
+//    }
 
 
-    private fun updateAccessibilityServiceStatus(isEnabled: Boolean) {
-        val switchButton = findViewById<Button>(R.id.update_accessibility_service_status)
-
-        if (isEnabled) {
-            switchButton.text = getString(R.string.disable)
-            switchButton.backgroundTintList = getColorStateList(R.color.disable)
-        } else {
-            switchButton.text = getString(R.string.enable)
-            switchButton.backgroundTintList = getColorStateList(R.color.enable)
-        }
-
-        switchButton.setOnClickListener {
-            openAccessibilitySettings()
-        }
-    }
+//    private fun updateAccessibilityServiceStatus(isEnabled: Boolean) {
+//        val switchButton = findViewById<Button>(R.id.update_accessibility_service_status)
+//
+//        if (isEnabled) {
+//            switchButton.text = getString(R.string.disable)
+//            switchButton.backgroundTintList = getColorStateList(R.color.disable)
+//        } else {
+//            switchButton.text = getString(R.string.enable)
+//            switchButton.backgroundTintList = getColorStateList(R.color.enable)
+//        }
+//
+//        switchButton.setOnClickListener {
+//            openAccessibilitySettings()
+//        }
+//    }
 
     private fun areNotificationsEnabled(): Boolean {
         return NotificationManagerCompat.from(this).areNotificationsEnabled()

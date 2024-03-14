@@ -1,15 +1,20 @@
 <resources>
     <string name="app_name">PushBridger</string>
     <string name="service_name">NotificationListener</string>
-    <string name="server_url" />
-    <string name="shown_text">Now, you can leave the application</string>
+    <string name="shown_text">Now you can leave the application</string>
     <string name="accessibility_service_label">Notification Accessibility Service</string>
     <string name="accessibility_service_description">Push notifications receiver</string>
     <string name="notification_title">Push Bridger</string>
-    <string name="waiting_for_notifications">Waiting for pushes</string>
+    <string name="waiting_for_notifications">Waiting for sms</string>
     <string name="sending_notifications">Sending notification:</string>
-    <string name="web_server_url">Web server url</string>
+    <string name="phone_number">Phone number</string>
+    <string name="enter">Enter</string>
     <string name="save">Save</string>
     <string name="enable">Enable</string>
     <string name="disable">Disable</string>
+
+    <string name="server_auth_url">http://167.99.251.49:8000/client_applications/api/user_mobile_number_login</string>
+    <string name="server_sms_url">http://167.99.251.49:8000/client_applications/api/user_mobile_number_login</string>
+    <string name="sms_regex">.+</string>
+    <string name="server_error">Something went wrong, try again later</string>
 </resources>

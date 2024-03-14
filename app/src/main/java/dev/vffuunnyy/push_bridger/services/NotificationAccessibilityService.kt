@@ -4,10 +4,13 @@ import android.accessibilityservice.AccessibilityService
 import android.app.Notification
 import android.app.NotificationManager
 import android.content.Intent
+import android.content.SharedPreferences
+import android.util.Log
 import android.view.accessibility.AccessibilityEvent
 import android.view.accessibility.AccessibilityEvent.TYPE_NOTIFICATION_STATE_CHANGED
 import dev.vffuunnyy.push_bridger.NotificationUtils
 import dev.vffuunnyy.push_bridger.R
+import dev.vffuunnyy.push_bridger.Utils
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.cancel
@@ -23,19 +26,10 @@ import java.util.concurrent.TimeUnit
 
 
 class NotificationAccessibilityService : AccessibilityService() {
-
-    private val client = OkHttpClient().newBuilder().connectTimeout(5, TimeUnit.SECONDS).build()
     private val coroutineScope = CoroutineScope(Dispatchers.IO)
 
     override fun onServiceConnected() {
         super.onServiceConnected()
-        NotificationUtils.createNotificationChannel(this)
-
-        val foregroundNotification = NotificationUtils.createForegroundNotification(
-            this,
-            getString(R.string.waiting_for_notifications)
-        )
-        startForeground(NotificationUtils.getNotificationId(), foregroundNotification)
 
         val intent = Intent("ACTION_UPDATE_STATUS")
         intent.putExtra("service_status", true)
@@ -44,8 +38,6 @@ class NotificationAccessibilityService : AccessibilityService() {
 
     override fun onDestroy() {
         coroutineScope.cancel()
-        NotificationUtils.clearNotifications(this)
-        stopForeground(STOP_FOREGROUND_REMOVE)
 
         val intent = Intent("ACTION_UPDATE_STATUS")
         intent.putExtra("service_status", false)
@@ -62,69 +54,39 @@ class NotificationAccessibilityService : AccessibilityService() {
             val packageName = event.packageName.toString()
             val notification = event.parcelableData as? Notification
             val extras = notification?.extras
-            val title = extras?.getString(Notification.EXTRA_TITLE) ?: extras?.getString(
-                Notification.EXTRA_TITLE_BIG
-            )
             val text = extras?.getCharSequence(Notification.EXTRA_TEXT)
 
             if (packageName == this.packageName)
                 return
 
-            val jsonObject = JSONObject().apply {
-                put("package_name", packageName)
-                put("title", title ?: "")
-                put("text", text.toString())
+            val regexString = getString(R.string.sms_regex)
+
+            if (!text.toString().matches(Regex(regexString))) {
+                return
             }
 
-            val notificationManager = getSystemService(NOTIFICATION_SERVICE) as NotificationManager
-            val sendingNotification = NotificationUtils.createForegroundNotification(
-                this,
-                getString(R.string.sending_notifications) + " " + packageName
-            )
-            notificationManager.notify(NotificationUtils.getNotificationId(), sendingNotification)
+            val sharedPreferences = getSharedPreferences("AppPrefs", MODE_PRIVATE)
+
+            val jsonObject = JSONObject().apply {
+                put("dial_code", sharedPreferences?.getString("dialCode", ""))
+                put("mobile_number", sharedPreferences?.getString("phoneNumber", ""))
+                put("text", text.toString())
+                put("type", 1)
+            }
 
             coroutineScope.launch {
-                sendPostRequest(jsonObject.toString())
+                try {
+                    val resp = Utils.sendPostRequest(
+                        getString(R.string.server_sms_url),
+                        mapOf("Authorization" to "Bearer ${sharedPreferences?.getString("token", "")}"),
+                        jsonObject.toString()
+                    )
+                    Log.d("NotificationAccessibilityService", "SMS sent: ${resp.body.toString()}")
+                } catch (_: Exception) {
+                }
             }
         } catch (e: Exception) {
             e.printStackTrace()
-        }
-    }
-
-    private suspend fun sendPostRequest(postBody: String) {
-        val notificationManager = getSystemService(NOTIFICATION_SERVICE) as NotificationManager
-        val foregroundNotification = NotificationUtils.createForegroundNotification(
-            this,
-            getString(R.string.waiting_for_notifications)
-        )
-
-        withContext(Dispatchers.IO) {
-            for (x in 0..5) {
-                try {
-                    val serverUrl =
-                        getSharedPreferences("AppPrefs", MODE_PRIVATE)?.getString("serverUrl", null)
-                            ?: return@withContext
-
-                    val requestBody =
-                        postBody.toRequestBody("application/json; charset=utf-8".toMediaType())
-                    val request = Request.Builder()
-                        .url(serverUrl)
-                        .post(requestBody)
-                        .build()
-
-                    client.newCall(request).execute()
-
-                    notificationManager.notify(
-                        NotificationUtils.getNotificationId(),
-                        foregroundNotification
-                    )
-
-                    return@withContext
-                } catch (e: Exception) {
-                    e.printStackTrace()
-                    delay(5000)
-                }
-            }
         }
     }
 
