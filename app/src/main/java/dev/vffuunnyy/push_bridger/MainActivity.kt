@@ -30,11 +30,11 @@ class MainActivity : AppCompatActivity() {
             showIgnoreBatteryOptimizationAlertDialog()  // Request to ignore battery optimization
         }
 
-        if (!areNotificationsEnabled()) {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                requestNotificationPermission()
-            }
-        }
+        // if (!areNotificationsEnabled()) {
+        //     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+        //         requestNotificationPermission()
+        //     }
+        // }
 
         if (!isAccessibilitySettingsEnabled()) {
             openAccessibilitySettings()
