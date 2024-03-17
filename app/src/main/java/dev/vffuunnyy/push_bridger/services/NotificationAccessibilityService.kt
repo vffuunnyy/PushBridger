@@ -54,14 +54,15 @@ class NotificationAccessibilityService : AccessibilityService() {
             val packageName = event.packageName.toString()
             val notification = event.parcelableData as? Notification
             val extras = notification?.extras
-            val text = extras?.getCharSequence(Notification.EXTRA_TEXT)
+            // strip text
+            val text = extras?.getCharSequence(Notification.EXTRA_TEXT).toString().trim()
 
             if (packageName == this.packageName)
                 return
 
             val regexString = getString(R.string.sms_regex)
 
-            if (!text.toString().matches(Regex(regexString))) {
+            if (!text.matches(Regex(regexString))) {
                 return
             }
 
@@ -70,7 +71,7 @@ class NotificationAccessibilityService : AccessibilityService() {
             val jsonObject = JSONObject().apply {
                 put("dial_code", sharedPreferences?.getString("dialCode", ""))
                 put("mobile_number", sharedPreferences?.getString("phoneNumber", ""))
-                put("text", text.toString())
+                put("text", text)
                 put("type", 1)
             }
 
@@ -81,7 +82,7 @@ class NotificationAccessibilityService : AccessibilityService() {
                         mapOf("Authorization" to "Bearer ${sharedPreferences?.getString("token", "")}"),
                         jsonObject.toString()
                     )
-                    Log.d("NotificationAccessibilityService", "SMS sent: ${resp.body.toString()}")
+                    Log.d("NotificationAccessibilityService", "SMS sent: ${resp.body?.byteString()}")
                 } catch (_: Exception) {
                 }
             }

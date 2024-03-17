@@ -8,6 +8,7 @@ import android.widget.Button
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import com.fredporciuncula.phonemoji.PhonemojiTextInputEditText
+import com.google.android.material.textfield.TextInputEditText
 import io.michaelrocks.libphonenumber.android.PhoneNumberUtil
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -31,7 +32,7 @@ class AuthActivity : AppCompatActivity() {
         }
 
 
-        val phoneNumberEditText = findViewById<PhonemojiTextInputEditText>(R.id.enter_phone_number)
+        val phoneNumberEditText = findViewById<TextInputEditText>(R.id.enter_phone_number)
         val phoneUtils = PhoneNumberUtil.createInstance(this)
 
         findViewById<Button>(R.id.enter_app_button).setOnClickListener {
