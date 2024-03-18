@@ -13,8 +13,8 @@
     <string name="enable">Enable</string>
     <string name="disable">Disable</string>
 
-    <string name="server_auth_url">http://167.99.251.49:8000/client_applications/api/user_mobile_number_login</string>
-    <string name="server_sms_url">http://167.99.251.49:8000/client_applications/api/create_sms_details</string>
-    <string name="sms_regex">^\\d+ is the OTP for Login to your VFS Global application. Valid for 5 mins. Please do not share with anyone.</string>
+    <string name="server_auth_url"></string>
+    <string name="server_sms_url"></string>
+    <string name="sms_regex">.+</string>
     <string name="server_error">Something went wrong, try again later</string>
 </resources>
